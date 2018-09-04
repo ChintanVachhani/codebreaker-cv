@@ -457,10 +457,11 @@ class PuzzleDetection:
                            round(sum([n[1] for n in neighbors]) / len(neighbors))))
         return list(allPoints)
 
-    def __extractGridPoints(self, image, area):
+    def __extractGridPoints(self, image, area, puzzleSize):
         """
         :param image: input image (cropped bounding box of a puzzle) containing grid
         :param area: area of the input image (cropped bounding box of a puzzle)
+        :param puzzleSize: size of the puzzle grid (as number of squares)
         :return: a list of grid points
         """
         imageGray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
@@ -469,8 +470,8 @@ class PuzzleDetection:
 
         _, contours, hierarchy = cv2.findContours(imageGrayBlurredThreshold, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
 
-        maxSquareArea = (area / (15 * 15)) * 1.5
-        minSquareArea = (area / (15 * 15)) * 0.5
+        maxSquareArea = (area / (puzzleSize * puzzleSize)) * 1.5
+        minSquareArea = (area / (puzzleSize * puzzleSize)) * 0.5
         gridPoints = list()
         # add initial 4 corners to the points list
         gridPoints.append((1, 1))
@@ -533,15 +534,17 @@ class PuzzleDetection:
             # print((cv2.countNonZero(image) / (h * w)) * 100)
             return False
 
-    def detect(self, image):
+    def detect(self, image, puzzleSize):
         """
         :param image: input image
+        :param puzzleSize: size of the puzzle grid (as number of squares)
         :return: a 2D matrix of the puzzle grid, a dict that maps 1-26
         """
         try:
+            # extract the squares from the puzzle grid
             x, y, w, h, a = self.__findGrid(image)
             puzzleSquare = image[y: y + h, x: x + w]
-            gridPoints = self.__groupAndSortGridPoints(self.__extractGridPoints(puzzleSquare, a))
+            gridPoints = self.__groupAndSortGridPoints(self.__extractGridPoints(puzzleSquare, a, puzzleSize))
             # print(len(gridPoints) ** 2)
             # for group in gridPoints:
             #     for point in group:
@@ -551,26 +554,41 @@ class PuzzleDetection:
             # cv2.waitKey(0)
             # cv2.destroyAllWindows()
             grid = self.__extractGridBoxes(puzzleSquare, gridPoints)
+
+            # pass each detected square through OCR and create a digital representation
             rekognitionOCR = CharacterRecognitionWithRekognition()
             knnOCR = CharacterRecognitionWithKNN(minimumContourArea=55)
-            data = [[-1] * (len(gridPoints) - 1) for _ in range(len(gridPoints) - 1)]
+            data = [[0] * (len(gridPoints) - 1) for _ in range(len(gridPoints) - 1)]
+
+            # only required for codeword puzzle
             table = dict.fromkeys([num for num in range(1, 27)])
+
             for i in range(len(grid)):
                 for j in range(len(grid)):
-                    if not self.__imageIsBlack(grid[i][j]):
-                        # detect and fill data using KNN
-                        h, w = grid[i][j].shape[:2]
-                        upperHalf = grid[i][j][:int(h / 2.5), :]
-                        lowerHalf = grid[i][j][int(h / 2.5):, :]
-                        number = knnOCR.detectNumbers(upperHalf)
+
+                    # for sudoku puzzle
+                    if not self.__imageIsWhite(grid[i][j]):
+                        number = knnOCR.detectNumbers(grid[i][j])
                         if number is not None:
                             if not len(number) == 0:
                                 data[i][j] = int(number)
-                        if not self.__imageIsWhite(lowerHalf):
-                            alphabet = knnOCR.detectAlphabets(lowerHalf)
-                            if alphabet is not None:
-                                if not len(alphabet) == 0:
-                                    table[int(number)] = alphabet
+
+                    # for codeword puzzle
+                    '''
+                    # if not self.__imageIsBlack(grid[i][j]):
+                        # detect and fill data using KNN
+                        # h, w = grid[i][j].shape[:2]
+                        # upperHalf = grid[i][j][:int(h / 2.5), :]
+                        # lowerHalf = grid[i][j][int(h / 2.5):, :]
+                        # number = knnOCR.detectNumbers(upperHalf)
+                        # if number is not None:
+                        #     if not len(number) == 0:
+                        #         data[i][j] = int(number)
+                        # if not self.__imageIsWhite(lowerHalf):
+                        #     alphabet = knnOCR.detectAlphabets(lowerHalf)
+                        #     if alphabet is not None:
+                        #         if not len(alphabet) == 0:
+                        #             table[int(number)] = alphabet
 
                         # detect and fill data using AWS Rekognition
                         # imagePath = 'images/box' + str(i) + '-' + str(j) + '.jpg'
@@ -595,6 +613,7 @@ class PuzzleDetection:
                         # cv2.imshow('Puzzle Box ' + str(i) + ', ' + str(j), grid[i][j])
                         # cv2.waitKey(0)
                         # cv2.destroyAllWindows()
+                    '''
             return True, data, table
         except:
             return False, [[]], dict()

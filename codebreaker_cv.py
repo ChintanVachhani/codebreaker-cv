@@ -534,7 +534,44 @@ class PuzzleDetection:
             # print((cv2.countNonZero(image) / (h * w)) * 100)
             return False
 
-    def detect(self, image, puzzleSize):
+    def detectSudokuPuzzle(self, image, puzzleSize):
+        """
+        :param image: input image
+        :param puzzleSize: size of the puzzle grid (as number of squares)
+        :return: a 2D matrix of the puzzle grid
+        """
+        try:
+            # extract the squares from the puzzle grid
+            x, y, w, h, a = self.__findGrid(image)
+            puzzleSquare = image[y: y + h, x: x + w]
+            gridPoints = self.__groupAndSortGridPoints(self.__extractGridPoints(puzzleSquare, a, puzzleSize))
+            # print(len(gridPoints) ** 2)
+            # for group in gridPoints:
+            #     for point in group:
+            #         cv2.circle(puzzleSquare, point, 6, (0, 0, 255), -1)
+            # print(point)
+            # cv2.imshow('Result', cv2.resize(puzzleSquare, (600, 600)))
+            # cv2.waitKey(0)
+            # cv2.destroyAllWindows()
+            grid = self.__extractGridBoxes(puzzleSquare, gridPoints)
+
+            # pass each detected square through OCR and create a digital representation
+            knnOCR = CharacterRecognitionWithKNN(minimumContourArea=55)
+            data = [[0] * (len(gridPoints) - 1) for _ in range(len(gridPoints) - 1)]
+
+            for i in range(len(grid)):
+                for j in range(len(grid)):
+                    # for sudoku puzzle
+                    if not self.__imageIsWhite(grid[i][j]):
+                        number = knnOCR.detectNumbers(grid[i][j])
+                        if number is not None:
+                            if not len(number) == 0:
+                                data[i][j] = int(number)
+            return True, data
+        except:
+            return False, [[]]
+
+    def detectCodeWordPuzzle(self, image, puzzleSize):
         """
         :param image: input image
         :param puzzleSize: size of the puzzle grid (as number of squares)
@@ -565,30 +602,21 @@ class PuzzleDetection:
 
             for i in range(len(grid)):
                 for j in range(len(grid)):
-
-                    # for sudoku puzzle
-                    if not self.__imageIsWhite(grid[i][j]):
-                        number = knnOCR.detectNumbers(grid[i][j])
+                    # for codeword puzzle
+                    if not self.__imageIsBlack(grid[i][j]):
+                        # detect and fill data using KNN
+                        h, w = grid[i][j].shape[:2]
+                        upperHalf = grid[i][j][:int(h / 2.5), :]
+                        lowerHalf = grid[i][j][int(h / 2.5):, :]
+                        number = knnOCR.detectNumbers(upperHalf)
                         if number is not None:
                             if not len(number) == 0:
                                 data[i][j] = int(number)
-
-                    # for codeword puzzle
-                    '''
-                    # if not self.__imageIsBlack(grid[i][j]):
-                        # detect and fill data using KNN
-                        # h, w = grid[i][j].shape[:2]
-                        # upperHalf = grid[i][j][:int(h / 2.5), :]
-                        # lowerHalf = grid[i][j][int(h / 2.5):, :]
-                        # number = knnOCR.detectNumbers(upperHalf)
-                        # if number is not None:
-                        #     if not len(number) == 0:
-                        #         data[i][j] = int(number)
-                        # if not self.__imageIsWhite(lowerHalf):
-                        #     alphabet = knnOCR.detectAlphabets(lowerHalf)
-                        #     if alphabet is not None:
-                        #         if not len(alphabet) == 0:
-                        #             table[int(number)] = alphabet
+                        if not self.__imageIsWhite(lowerHalf):
+                            alphabet = knnOCR.detectAlphabets(lowerHalf)
+                            if alphabet is not None:
+                                if not len(alphabet) == 0:
+                                    table[int(number)] = alphabet
 
                         # detect and fill data using AWS Rekognition
                         # imagePath = 'images/box' + str(i) + '-' + str(j) + '.jpg'
@@ -613,7 +641,6 @@ class PuzzleDetection:
                         # cv2.imshow('Puzzle Box ' + str(i) + ', ' + str(j), grid[i][j])
                         # cv2.waitKey(0)
                         # cv2.destroyAllWindows()
-                    '''
             return True, data, table
         except:
             return False, [[]], dict()

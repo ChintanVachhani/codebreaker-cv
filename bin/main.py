@@ -5,10 +5,9 @@ from codebreaker_cv import *
 def main():
     image = cv2.imread(sys.argv[1], 1)
     obj = PuzzleDetection()
-    success, data, table = obj.detect(image, int(sys.argv[2]))
+    success, data = obj.detectSudokuPuzzle(image, int(sys.argv[2]))
     if success:
         print(data)
-        print(table)
     else:
         print('Invalid image!')
     # obj = CharacterRecognitionWithKNN()

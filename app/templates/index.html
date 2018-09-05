@@ -28,107 +28,36 @@
         <p class="lead">A <strong>REST API</strong> for Project Code Breaker's Computer Vision Module.</p>
     </div>
 </div>
-<div class="container">
-    <h4>API Call Examples</h4><br>
-    <div class="card card-success">
-        <h5 class="card-header">Featured</h5>
+<div class="container pb-5">
+    <h4>API Calls</h4><br>
+    <div class="card">
+        <h5 class="card-header alert-success">add(x, y)</h5>
         <div class="card-body">
-            <h5 class="card-title">Special title treatment</h5>
-            <p class="card-text">With supporting text below as a natural lead-in to additional content.</p>
+            <p class="card-title"><span class="badge badge-success">GET</span>&nbsp; /calculate?x=9&operator=+&y=6</p>
+            <p class="card-text">
+                {
+                "message": "Addition OK.",
+                "result": 15
+                }
+            </p>
         </div>
     </div>
-    <div class="alert alert-success">
-        <h5 class="alert-heading">add(x, y)</h5>
-        <p><span class="badge badge-success">GET</span>&nbsp;/calculate?x=9&operator=+&y=6</p>
-        <hr>
-        <p>
-            {
-            "message": "Addition OK.",
-            "result": 15
-            }
-        </p>
-    </div>
-    <div class="alert alert-light">
-        <h5 class="alert-heading">subtract(x, y)</h5>
-        <p><span class="badge badge-success">GET</span>&nbsp;/calculate?x=9&operator=-&y=6</p>
-        <hr>
-        <p>
-            {
-            "message": "Subtraction OK.",
-            "result": 3
-            }
-        </p>
-    </div>
-    <div class="alert alert-info">
-        <h5 class="alert-heading">multiply(x, y)</h5>
-        <p><span class="badge badge-success">GET</span>&nbsp;/calculate?x=9&operator=*&y=6</p>
-        <hr>
-        <p>
-            {
-            "message": "Multiplication OK.",
-            "result": 54
-            }
-        </p>
-    </div>
-    <div class="alert alert-warning">
-        <h5 class="alert-heading">divide(x, y)</h5>
-        <p><span class="badge badge-success">GET</span>&nbsp;/calculate?x=9&operator=/&y=6</p>
-        <hr>
-        <p>
-            {
-            "message": "Division OK.",
-            "result": 1.5
-            }
-        </p>
-    </div>
     <br>
-    <h4>Error Call Examples</h4><br>
-    <div class="alert alert-danger">
-        <h5 class="alert-heading">not found</h5>
-        <p><span class="badge badge-success">GET</span>&nbsp;/cal?x=9&operator=+&y=6</p>
-        <hr>
-        <p>
-            {
-            "message": "Error.",
-            "error": {
-            "title": "Not Found.",
-            "status": 404
-            }
-            }
-        </p>
-    </div>
-    <div class="alert alert-danger">
-        <h5 class="alert-heading">wrong operator</h5>
-        <p><span class="badge badge-success">GET</span>&nbsp;/calculate?x=9&operator=%&y=6</p>
-        <hr>
-        <p>
-            {
-            "message": "Exception.",
-            "error": "Wrong Operator."
-            }
-        </p>
-    </div>
-    <div class="alert alert-danger">
-        <h5 class="alert-heading">empty parameter(s)</h5>
-        <p><span class="badge badge-success">GET</span>&nbsp;/calculate?x=&operator=+&y=6</p>
-        <hr>
-        <p>
-            {
-            "message": "Exception.",
-            "error": "Empty Parameter(s)."
-            }
-        </p>
-    </div>
-    <div class="alert alert-danger">
-        <h5 class="alert-heading">divide by zero</h5>
-        <p><span class="badge badge-success">GET</span>&nbsp;/calculate?x=9&operator=/&y=0</p>
-        <hr>
-        <p>
-            {
-            "message": "Exception.",
-            "error": "Divide by Zero."
-            }
-        </p>
+    <h4>Errors</h4><br>
+    <div class="card">
+        <h5 class="card-header alert-danger">not found</h5>
+        <div class="card-body">
+            <p class="card-title"><span class="badge badge-success">GET</span>&nbsp; /cal?x=9&operator=+&y=6</p>
+            <p class="card-text">
+                {
+                "message": "Error.",
+                "error": {
+                "title": "Not Found.",
+                "status": 404
+                }
+                }
+            </p>
+        </div>
     </div>
 </div>
 

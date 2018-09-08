@@ -609,24 +609,24 @@ class PuzzleDetection:
         :param puzzleSize: size of the puzzle grid (as number of squares)
         :return: the puzzle image with filled data
         """
-        # try:
-        # extract the squares from the puzzle grid
-        imageCopy = image
-        x, y, w, h, a = self.__findGrid(image)
-        puzzleSquare = image[y: y + h, x: x + w]
-        gridPoints = self.__groupAndSortGridPoints(self.__extractGridPoints(puzzleSquare, a, puzzleSize))
-        # print(len(gridPoints) ** 2)
-        # for group in gridPoints:
-        #     for point in group:
-        #         cv2.circle(puzzleSquare, point, 6, (0, 0, 255), -1)
-        # print(point)
-        # cv2.imshow('Result', cv2.resize(puzzleSquare, (600, 600)))
-        # cv2.waitKey(0)
-        # cv2.destroyAllWindows()
-        filledPuzzle = self.__fillGridBoxes(puzzleSquare, gridPoints, data)
-        return True, filledPuzzle
-    # except:
-    #     return False, image
+        try:
+            # extract the squares from the puzzle grid
+            imageCopy = image
+            x, y, w, h, a = self.__findGrid(image)
+            puzzleSquare = image[y: y + h, x: x + w]
+            gridPoints = self.__groupAndSortGridPoints(self.__extractGridPoints(puzzleSquare, a, puzzleSize))
+            # print(len(gridPoints) ** 2)
+            # for group in gridPoints:
+            #     for point in group:
+            #         cv2.circle(puzzleSquare, point, 6, (0, 0, 255), -1)
+            # print(point)
+            # cv2.imshow('Result', cv2.resize(puzzleSquare, (600, 600)))
+            # cv2.waitKey(0)
+            # cv2.destroyAllWindows()
+            filledPuzzle = self.__fillGridBoxes(puzzleSquare, gridPoints, data)
+            return True, filledPuzzle
+        except:
+            return False, image
 
 
 def detectCodeWordPuzzle(self, image, puzzleSize):

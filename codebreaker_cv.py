@@ -340,12 +340,12 @@ class CharacterRecognitionWithKNN:
 
         for contourWithData in validContoursWithData:  # for each contour
             # draw a green rect around the current char
-            cv2.rectangle(imgTestingNumbers,  # draw rectangle on original testing image
-                          (contourWithData.intRectX, contourWithData.intRectY),  # upper left corner
-                          (contourWithData.intRectX + contourWithData.intRectWidth,
-                           contourWithData.intRectY + contourWithData.intRectHeight),  # lower right corner
-                          (0, 255, 0),  # green
-                          2)  # thickness
+            # cv2.rectangle(imgTestingNumbers,  # draw rectangle on original testing image
+            #               (contourWithData.intRectX, contourWithData.intRectY),  # upper left corner
+            #               (contourWithData.intRectX + contourWithData.intRectWidth,
+            #                contourWithData.intRectY + contourWithData.intRectHeight),  # lower right corner
+            #               (0, 255, 0),  # green
+            #               2)  # thickness
 
             imgROI = imgThresh[contourWithData.intRectY: contourWithData.intRectY + contourWithData.intRectHeight,
                      # crop char out of threshold image
@@ -506,6 +506,38 @@ class PuzzleDetection:
             grid.append(row)
         return grid
 
+    def __fillGridBoxes(self, image, points, data):
+        """
+        :param image: input image (cropped bounding box of a puzzle) containing grid
+        :param points: a list of the grid points
+        :param data: data to filled into the image
+        :return: the puzzle image with filled data
+        """
+        # text style
+        font = cv2.FONT_HERSHEY_SIMPLEX
+        bottomLeftCornerOfText = (10, 500)
+        fontScale = 3
+        fontColor = (0, 0, 255)
+        lineThickness = 8
+        lineType = 2
+
+        borderError = 4
+
+        # draw the text
+        edgeLength = len(points) - 1
+        for i in range(edgeLength):
+            for j in range(edgeLength):
+                if self.__imageIsWhite(image[points[i][j][1] + borderError: points[i + 1][j][1] - borderError,
+                                       points[i][j][0] + borderError: points[i][j + 1][0] - borderError]):
+                    x = points[i][j][0]
+                    w = points[i][j + 1][0] - points[i][j][0]
+                    y = points[i][j][1]
+                    h = points[i + 1][j][1] - points[i][j][1]
+                    textPosition = ((x + int((w / 2))) - (fontScale * 10), (y + int((h / 2))) + (fontScale * 10))
+                    cv2.putText(image, str(data[i][j]), textPosition, font, fontScale, fontColor, lineThickness,
+                                lineType)
+        return image
+
     @staticmethod
     def __imageIsBlack(image):
         """
@@ -554,7 +586,6 @@ class PuzzleDetection:
             # cv2.waitKey(0)
             # cv2.destroyAllWindows()
             grid = self.__extractGridBoxes(puzzleSquare, gridPoints)
-
             # pass each detected square through OCR and create a digital representation
             knnOCR = CharacterRecognitionWithKNN(minimumContourArea=55)
             data = [[0] * (len(gridPoints) - 1) for _ in range(len(gridPoints) - 1)]
@@ -571,76 +602,103 @@ class PuzzleDetection:
         except:
             return False, [[]]
 
-    def detectCodeWordPuzzle(self, image, puzzleSize):
+    def fillSudokuPuzzle(self, image, data, puzzleSize):
         """
         :param image: input image
+        :param data: data to filled into the image
         :param puzzleSize: size of the puzzle grid (as number of squares)
-        :return: a 2D matrix of the puzzle grid, a dict that maps 1-26
+        :return: the puzzle image with filled data
         """
-        try:
-            # extract the squares from the puzzle grid
-            x, y, w, h, a = self.__findGrid(image)
-            puzzleSquare = image[y: y + h, x: x + w]
-            gridPoints = self.__groupAndSortGridPoints(self.__extractGridPoints(puzzleSquare, a, puzzleSize))
-            # print(len(gridPoints) ** 2)
-            # for group in gridPoints:
-            #     for point in group:
-            #         cv2.circle(puzzleSquare, point, 6, (0, 0, 255), -1)
-            # print(point)
-            # cv2.imshow('Result', cv2.resize(puzzleSquare, (600, 600)))
-            # cv2.waitKey(0)
-            # cv2.destroyAllWindows()
-            grid = self.__extractGridBoxes(puzzleSquare, gridPoints)
+        # try:
+        # extract the squares from the puzzle grid
+        imageCopy = image
+        x, y, w, h, a = self.__findGrid(image)
+        puzzleSquare = image[y: y + h, x: x + w]
+        gridPoints = self.__groupAndSortGridPoints(self.__extractGridPoints(puzzleSquare, a, puzzleSize))
+        # print(len(gridPoints) ** 2)
+        # for group in gridPoints:
+        #     for point in group:
+        #         cv2.circle(puzzleSquare, point, 6, (0, 0, 255), -1)
+        # print(point)
+        # cv2.imshow('Result', cv2.resize(puzzleSquare, (600, 600)))
+        # cv2.waitKey(0)
+        # cv2.destroyAllWindows()
+        filledPuzzle = self.__fillGridBoxes(puzzleSquare, gridPoints, data)
+        return True, filledPuzzle
+    # except:
+    #     return False, image
 
-            # pass each detected square through OCR and create a digital representation
-            rekognitionOCR = CharacterRecognitionWithRekognition()
-            knnOCR = CharacterRecognitionWithKNN(minimumContourArea=55)
-            data = [[0] * (len(gridPoints) - 1) for _ in range(len(gridPoints) - 1)]
 
-            # only required for codeword puzzle
-            table = dict.fromkeys([num for num in range(1, 27)])
+def detectCodeWordPuzzle(self, image, puzzleSize):
+    """
+    :param image: input image
+    :param puzzleSize: size of the puzzle grid (as number of squares)
+    :return: a 2D matrix of the puzzle grid, a dict that maps 1-26
+    """
+    try:
+        # extract the squares from the puzzle grid
+        x, y, w, h, a = self.__findGrid(image)
+        puzzleSquare = image[y: y + h, x: x + w]
+        gridPoints = self.__groupAndSortGridPoints(self.__extractGridPoints(puzzleSquare, a, puzzleSize))
+        # print(len(gridPoints) ** 2)
+        # for group in gridPoints:
+        #     for point in group:
+        #         cv2.circle(puzzleSquare, point, 6, (0, 0, 255), -1)
+        # print(point)
+        # cv2.imshow('Result', cv2.resize(puzzleSquare, (600, 600)))
+        # cv2.waitKey(0)
+        # cv2.destroyAllWindows()
+        grid = self.__extractGridBoxes(puzzleSquare, gridPoints)
 
-            for i in range(len(grid)):
-                for j in range(len(grid)):
-                    # for codeword puzzle
-                    if not self.__imageIsBlack(grid[i][j]):
-                        # detect and fill data using KNN
-                        h, w = grid[i][j].shape[:2]
-                        upperHalf = grid[i][j][:int(h / 2.5), :]
-                        lowerHalf = grid[i][j][int(h / 2.5):, :]
-                        number = knnOCR.detectNumbers(upperHalf)
-                        if number is not None:
-                            if not len(number) == 0:
-                                data[i][j] = int(number)
-                        if not self.__imageIsWhite(lowerHalf):
-                            alphabet = knnOCR.detectAlphabets(lowerHalf)
-                            if alphabet is not None:
-                                if not len(alphabet) == 0:
-                                    table[int(number)] = alphabet
+        # pass each detected square through OCR and create a digital representation
+        rekognitionOCR = CharacterRecognitionWithRekognition()
+        knnOCR = CharacterRecognitionWithKNN(minimumContourArea=55)
+        data = [[0] * (len(gridPoints) - 1) for _ in range(len(gridPoints) - 1)]
 
-                        # detect and fill data using AWS Rekognition
-                        # imagePath = 'images/box' + str(i) + '-' + str(j) + '.jpg'
-                        # cv2.imwrite(imagePath, grid[i][j])
-                        # cv2.imwrite(imagePath, cv2.resize(grid[i][j], (320, 320)))
-                        # with open(imagePath, "rb") as imageFile:
-                        #     detectedText = rekognitionOCR.imageToText(bytearray(imageFile.read()))
-                        #     hasAlpha = False
-                        #     key = int()
-                        #     value = str()
-                        #     for d in detectedText:
-                        #         if d.isalpha():
-                        #             hasAlpha = True
-                        #             value = d
-                        #         else:
-                        #             key = int(d)
-                        #     data[i][j] = key
-                        #     if hasAlpha:
-                        #         table[key] = value
-                        # os.remove(imagePath)
+        # only required for codeword puzzle
+        table = dict.fromkeys([num for num in range(1, 27)])
 
-                        # cv2.imshow('Puzzle Box ' + str(i) + ', ' + str(j), grid[i][j])
-                        # cv2.waitKey(0)
-                        # cv2.destroyAllWindows()
-            return True, data, table
-        except:
-            return False, [[]], dict()
+        for i in range(len(grid)):
+            for j in range(len(grid)):
+                # for codeword puzzle
+                if not self.__imageIsBlack(grid[i][j]):
+                    # detect and fill data using KNN
+                    h, w = grid[i][j].shape[:2]
+                    upperHalf = grid[i][j][:int(h / 2.5), :]
+                    lowerHalf = grid[i][j][int(h / 2.5):, :]
+                    number = knnOCR.detectNumbers(upperHalf)
+                    if number is not None:
+                        if not len(number) == 0:
+                            data[i][j] = int(number)
+                    if not self.__imageIsWhite(lowerHalf):
+                        alphabet = knnOCR.detectAlphabets(lowerHalf)
+                        if alphabet is not None:
+                            if not len(alphabet) == 0:
+                                table[int(number)] = alphabet
+
+                    # detect and fill data using AWS Rekognition
+                    # imagePath = 'images/box' + str(i) + '-' + str(j) + '.jpg'
+                    # cv2.imwrite(imagePath, grid[i][j])
+                    # cv2.imwrite(imagePath, cv2.resize(grid[i][j], (320, 320)))
+                    # with open(imagePath, "rb") as imageFile:
+                    #     detectedText = rekognitionOCR.imageToText(bytearray(imageFile.read()))
+                    #     hasAlpha = False
+                    #     key = int()
+                    #     value = str()
+                    #     for d in detectedText:
+                    #         if d.isalpha():
+                    #             hasAlpha = True
+                    #             value = d
+                    #         else:
+                    #             key = int(d)
+                    #     data[i][j] = key
+                    #     if hasAlpha:
+                    #         table[key] = value
+                    # os.remove(imagePath)
+
+                    # cv2.imshow('Puzzle Box ' + str(i) + ', ' + str(j), grid[i][j])
+                    # cv2.waitKey(0)
+                    # cv2.destroyAllWindows()
+        return True, data, table
+    except:
+        return False, [[]], dict()

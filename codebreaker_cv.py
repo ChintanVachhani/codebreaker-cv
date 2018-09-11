@@ -383,7 +383,7 @@ class PuzzleDetection:
     @staticmethod
     def __findGrid(image):
         """
-        :param image: input image containing puzzle
+        :param image: input image containing puzzle in opencv format
         :return: bounding box (top-left-x, top-left-y, width, height) and the area (a) for the puzzle grid
         """
         imageGray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
@@ -459,7 +459,7 @@ class PuzzleDetection:
 
     def __extractGridPoints(self, image, area, puzzleSize):
         """
-        :param image: input image (cropped bounding box of a puzzle) containing grid
+        :param image: input image (cropped bounding box of a puzzle) containing grid in opencv format
         :param area: area of the input image (cropped bounding box of a puzzle)
         :param puzzleSize: size of the puzzle grid (as number of squares)
         :return: a list of grid points
@@ -491,7 +491,7 @@ class PuzzleDetection:
     @staticmethod
     def __extractGridBoxes(image, points):
         """
-        :param image: input image (cropped bounding box of a puzzle) containing grid
+        :param image: input image (cropped bounding box of a puzzle) containing grid in opencv format
         :param points: a list of the grid points
         :return: a 2D list containing each puzzle box
         """
@@ -508,7 +508,7 @@ class PuzzleDetection:
 
     def __fillGridBoxes(self, image, points, data):
         """
-        :param image: input image (cropped bounding box of a puzzle) containing grid
+        :param image: input image (cropped bounding box of a puzzle) containing grid in opencv format
         :param points: a list of the grid points
         :param data: data to filled into the image
         :return: the puzzle image with filled data
@@ -541,7 +541,7 @@ class PuzzleDetection:
     @staticmethod
     def __imageIsBlack(image):
         """
-        :param: image
+        :param: image in opencv format
         :return: True if image has >=95% black pixels, otherwise False
         """
         image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
@@ -555,7 +555,7 @@ class PuzzleDetection:
     @staticmethod
     def __imageIsWhite(image):
         """
-        :param: image
+        :param: image in opencv format
         :return: True if image has >98% white pixels, otherwise False
         """
         image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
@@ -566,13 +566,33 @@ class PuzzleDetection:
             # print((cv2.countNonZero(image) / (h * w)) * 100)
             return False
 
+    @staticmethod
+    def __convertImageFormatFromBufferToOpenCV(imageBuffer):
+        """
+        :param: image as buffer
+        :return: image in opencv format
+        """
+        return cv2.imdecode(imageBuffer)
+
+    @staticmethod
+    def __convertImageFormatFromOpenCVToBuffer(image):
+        """
+        :param: image in opencv format
+        :return: image as buffer
+        """
+        extension = 'PNG'
+        return cv2.imencode(extension, image)
+
     def detectSudokuPuzzle(self, image, puzzleSize):
         """
-        :param image: input image
+        :param image: input image as buffer
         :param puzzleSize: size of the puzzle grid (as number of squares)
         :return: a 2D matrix of the puzzle grid
         """
         try:
+            # convert image buffer to opencv format
+            # image = self.__convertImageFormatFromBufferToOpenCV(image)
+
             # extract the squares from the puzzle grid
             x, y, w, h, a = self.__findGrid(image)
             puzzleSquare = image[y: y + h, x: x + w]
@@ -604,12 +624,15 @@ class PuzzleDetection:
 
     def fillSudokuPuzzle(self, image, data, puzzleSize):
         """
-        :param image: input image
+        :param image: input image as buffer
         :param data: data to filled into the image
         :param puzzleSize: size of the puzzle grid (as number of squares)
         :return: the puzzle image with filled data
         """
         try:
+            # convert image buffer to opencv format
+            # image = self.__convertImageFormatFromBufferToOpenCV(image)
+
             # extract the squares from the puzzle grid
             imageCopy = image
             x, y, w, h, a = self.__findGrid(image)
@@ -630,11 +653,14 @@ class PuzzleDetection:
 
     def detectCodeWordPuzzle(self, image, puzzleSize):
         """
-        :param image: input image
+        :param image: input image as buffer
         :param puzzleSize: size of the puzzle grid (as number of squares)
         :return: a 2D matrix of the puzzle grid, a dict that maps 1-26
         """
         try:
+            # convert image buffer to opencv format
+            # image = self.__convertImageFormatFromBufferToOpenCV(image)
+
             # extract the squares from the puzzle grid
             x, y, w, h, a = self.__findGrid(image)
             puzzleSquare = image[y: y + h, x: x + w]

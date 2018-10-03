@@ -390,6 +390,11 @@ class PuzzleDetection:
         imageGrayBlurred = cv2.GaussianBlur(imageGray, (5, 5), 0)
         imageGrayBlurredThreshold = cv2.adaptiveThreshold(imageGrayBlurred, 255, 1, 1, 11, 2)
 
+        # display image
+        # cv2.imshow('TEST', cv2.resize(imageGrayBlurredThreshold, (600, 600)))
+        # cv2.waitKey(0)
+        # cv2.destroyAllWindows()
+
         _, contours, hierarchy = cv2.findContours(imageGrayBlurredThreshold, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
 
         biggestSquare = None
@@ -618,6 +623,10 @@ class PuzzleDetection:
                         if number is not None:
                             if not len(number) == 0:
                                 data[i][j] = int(number)
+
+                    # cv2.imshow('Puzzle Box ' + str(i) + ', ' + str(j), grid[i][j])
+                    # cv2.waitKey(0)
+                    # cv2.destroyAllWindows()
             return True, data
         except:
             return False, [[]]

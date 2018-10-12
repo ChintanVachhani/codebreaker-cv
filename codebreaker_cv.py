@@ -391,9 +391,9 @@ class PuzzleDetection:
         imageGrayBlurredThreshold = cv2.adaptiveThreshold(imageGrayBlurred, 255, 1, 1, 11, 2)
 
         # display image
-        # cv2.imshow('TEST', cv2.resize(imageGrayBlurredThreshold, (600, 600)))
-        # cv2.waitKey(0)
-        # cv2.destroyAllWindows()
+        cv2.imshow('TEST', cv2.resize(imageGrayBlurredThreshold, (600, 600)))
+        cv2.waitKey(0)
+        cv2.destroyAllWindows()
 
         _, contours, hierarchy = cv2.findContours(imageGrayBlurredThreshold, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
 
@@ -445,7 +445,7 @@ class PuzzleDetection:
         return sorted([list(x) for x in allPoints], key=lambda x: x[0][t])
 
     @staticmethod
-    def __averageNearestPoints(points, radius=5):
+    def __averageNearestPoints(points, radius=10):
         """
         :param radius: difference between points to average
         :param points: a list of points to be averaged
@@ -577,7 +577,7 @@ class PuzzleDetection:
         :param: image as buffer
         :return: image in opencv format
         """
-        return cv2.imdecode(imageBuffer)
+        return cv2.imdecode(imageBuffer, )
 
     @staticmethod
     def __convertImageFormatFromOpenCVToBuffer(image):
@@ -594,42 +594,88 @@ class PuzzleDetection:
         :param puzzleSize: size of the puzzle grid (as number of squares)
         :return: a 2D matrix of the puzzle grid
         """
-        try:
-            # convert image buffer to opencv format
-            # image = self.__convertImageFormatFromBufferToOpenCV(image)
+        # convert image buffer to opencv format
+        # image = self.__convertImageFormatFromBufferToOpenCV(image)
+        cv2.imshow('Result', image)
+        cv2.waitKey(0)
+        cv2.destroyAllWindows()
 
-            # extract the squares from the puzzle grid
-            x, y, w, h, a = self.__findGrid(image)
-            puzzleSquare = image[y: y + h, x: x + w]
-            gridPoints = self.__groupAndSortGridPoints(self.__extractGridPoints(puzzleSquare, a, puzzleSize))
-            # print(len(gridPoints) ** 2)
-            # for group in gridPoints:
-            #     for point in group:
-            #         cv2.circle(puzzleSquare, point, 6, (0, 0, 255), -1)
-            # print(point)
-            # cv2.imshow('Result', cv2.resize(puzzleSquare, (600, 600)))
-            # cv2.waitKey(0)
-            # cv2.destroyAllWindows()
-            grid = self.__extractGridBoxes(puzzleSquare, gridPoints)
-            # pass each detected square through OCR and create a digital representation
-            knnOCR = CharacterRecognitionWithKNN(minimumContourArea=55)
-            data = [[0] * (len(gridPoints) - 1) for _ in range(len(gridPoints) - 1)]
+        # extract the squares from the puzzle grid
+        x, y, w, h, a = self.__findGrid(image)
+        puzzleSquare = image[y: y + h, x: x + w]
+        gridPoints = self.__groupAndSortGridPoints(self.__extractGridPoints(puzzleSquare, a, puzzleSize))
+        print(len(gridPoints) ** 2)
+        for group in gridPoints:
+            for point in group:
+                cv2.circle(puzzleSquare, point, 6, (0, 0, 255), -1)
+                print(point)
+        cv2.imshow('Result', cv2.resize(puzzleSquare, (600, 600)))
+        cv2.waitKey(0)
+        cv2.destroyAllWindows()
+        grid = self.__extractGridBoxes(puzzleSquare, gridPoints)
+        # pass each detected square through OCR and create a digital representation
+        knnOCR = CharacterRecognitionWithKNN(minimumContourArea=55)
+        data = [[0] * (len(gridPoints) - 1) for _ in range(len(gridPoints) - 1)]
 
-            for i in range(len(grid)):
-                for j in range(len(grid)):
-                    # for sudoku puzzle
-                    if not self.__imageIsWhite(grid[i][j]):
-                        number = knnOCR.detectNumbers(grid[i][j])
-                        if number is not None:
-                            if not len(number) == 0:
-                                data[i][j] = int(number)
+        for i in range(len(grid)):
+            for j in range(len(grid)):
+                # for sudoku puzzle
+                if not self.__imageIsWhite(grid[i][j]):
+                    number = knnOCR.detectNumbers(grid[i][j])
+                    if number is not None:
+                        if not len(number) == 0:
+                            data[i][j] = int(number)
 
-                    # cv2.imshow('Puzzle Box ' + str(i) + ', ' + str(j), grid[i][j])
-                    # cv2.waitKey(0)
-                    # cv2.destroyAllWindows()
-            return True, data
-        except:
-            return False, [[]]
+                # cv2.imshow('Puzzle Box ' + str(i) + ', ' + str(j), grid[i][j])
+                # cv2.waitKey(0)
+                # cv2.destroyAllWindows()
+        return True, data
+
+    # def detectSudokuPuzzle(self, image, puzzleSize):
+    #     """
+    #     :param image: input image as buffer
+    #     :param puzzleSize: size of the puzzle grid (as number of squares)
+    #     :return: a 2D matrix of the puzzle grid
+    #     """
+    #     try:
+    #         # convert image buffer to opencv format
+    #         # image = self.__convertImageFormatFromBufferToOpenCV(image)
+    #         cv2.imshow('Result', image)
+    #         cv2.waitKey(0)
+    #         cv2.destroyAllWindows()
+    #
+    #         # extract the squares from the puzzle grid
+    #         x, y, w, h, a = self.__findGrid(image)
+    #         puzzleSquare = image[y: y + h, x: x + w]
+    #         gridPoints = self.__groupAndSortGridPoints(self.__extractGridPoints(puzzleSquare, a, puzzleSize))
+    #         print(len(gridPoints) ** 2)
+    #         for group in gridPoints:
+    #             for point in group:
+    #                 cv2.circle(puzzleSquare, point, 6, (0, 0, 255), -1)
+    #                 print(point)
+    #         cv2.imshow('Result', cv2.resize(puzzleSquare, (600, 600)))
+    #         cv2.waitKey(0)
+    #         cv2.destroyAllWindows()
+    #         grid = self.__extractGridBoxes(puzzleSquare, gridPoints)
+    #         # pass each detected square through OCR and create a digital representation
+    #         knnOCR = CharacterRecognitionWithKNN(minimumContourArea=55)
+    #         data = [[0] * (len(gridPoints) - 1) for _ in range(len(gridPoints) - 1)]
+    #
+    #         for i in range(len(grid)):
+    #             for j in range(len(grid)):
+    #                 # for sudoku puzzle
+    #                 if not self.__imageIsWhite(grid[i][j]):
+    #                     number = knnOCR.detectNumbers(grid[i][j])
+    #                     if number is not None:
+    #                         if not len(number) == 0:
+    #                             data[i][j] = int(number)
+    #
+    #                 # cv2.imshow('Puzzle Box ' + str(i) + ', ' + str(j), grid[i][j])
+    #                 # cv2.waitKey(0)
+    #                 # cv2.destroyAllWindows()
+    #         return True, data
+    #     except:
+    #         return False, [[]]
 
     def fillSudokuPuzzle(self, image, data, puzzleSize):
         """

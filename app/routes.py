@@ -52,13 +52,13 @@ def solveSudoku():
         imageBuffer = np.asarray(imageBuffer, dtype=np.uint8)
         # print(imageBuffer)
         extension = '.PNG'
-        _, result = cv2.imencode(extension, imageBuffer)
-        res = cv2.imdecode(result, cv2.IMREAD_COLOR)
-        print(res)
+        _, imageEncoded = cv2.imencode(extension, imageBuffer)
+        imageDecoded = cv2.imdecode(imageEncoded, cv2.IMREAD_COLOR)
+        print(imageDecoded)
 
-        cv2.imshow('Image', imageBuffer)
-        cv2.waitKey(0)
-        cv2.destroyAllWindows()
+        # cv2.imshow('Image', imageDecoded)
+        # cv2.waitKey(0)
+        # cv2.destroyAllWindows()
 
         # find and fill Sudoku
         # obj = PuzzleDetection()
@@ -75,4 +75,17 @@ def solveSudoku():
         # else:
         #     print('Invalid image!')
 
-    return util.success_response(200, 'This is a test response.', data)
+        # Decoded image to string
+        imageString = ''
+        for r in range(0, data['height']):
+            for c in range(0, data['width']):
+                for p in range(0, 3):
+                    imageString += str(imageDecoded[r][c][p]) + ' '
+
+        response = {
+            'imageHeight': imageDecoded.shape[0],
+            'imageWidth': imageDecoded.shape[1],
+            'image': imageString.strip()
+        }
+
+    return util.success_response(200, 'Puzzle detected and returned.', response)

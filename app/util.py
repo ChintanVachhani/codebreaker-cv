@@ -15,7 +15,7 @@ def success_response(statusCode, message, data=None):
     payload = {
         'message': message
     }
-    if data:
+    if len(data) > 0:
         payload['data'] = data
     res = jsonify(payload)
     res.status_code = statusCode

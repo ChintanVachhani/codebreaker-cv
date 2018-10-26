@@ -3,7 +3,10 @@ from werkzeug.http import HTTP_STATUS_CODES
 
 
 def error_response(statusCode, message=None):
-    payload = {'error': HTTP_STATUS_CODES.get(statusCode, 'Unknown error')}
+    # payload = {'error': HTTP_STATUS_CODES.get(statusCode, 'Unknown error')}
+    payload = {
+        'message': 'Unknown error'
+    }
     if message:
         payload['message'] = message
     res = jsonify(payload)

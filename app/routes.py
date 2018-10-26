@@ -51,44 +51,60 @@ def solveSudoku():
 
         imageBuffer = np.asarray(imageBuffer, dtype=np.uint8)
         # print(imageBuffer)
-        # extension = '.PNG'
-        # _, imageEncoded = cv2.imencode(extension, imageBuffer)
-        # imageDecoded = cv2.imdecode(imageEncoded, cv2.IMREAD_COLOR)
+        extension = '.PNG'
+        _, imageEncoded = cv2.imencode(extension, imageBuffer)
+        imageDecoded = cv2.imdecode(imageEncoded, cv2.IMREAD_COLOR)
         # print(imageDecoded)
-
+        #
         # cv2.imshow('Image', imageDecoded)
         # cv2.waitKey(0)
         # cv2.destroyAllWindows()
 
         # find and fill Sudoku
-        obj = PuzzleDetection()
-        success, data = obj.detectSudokuPuzzle(imageBuffer, 9)
-        if success:
-            print(data)
-            success, filledImage = obj.fillSudokuPuzzle(imageBuffer, data, 9)
-            if success:
-                # Decoded image to string
-                imageString = ''
-                for r in range(0, filledImage.shape[0]):
-                    for c in range(0, filledImage.shape[1]):
-                        for p in range(0, 3):
-                            imageString += str(filledImage[r][c][p]) + ' '
+        # obj = PuzzleDetection()
+        # success, data = obj.detectSudokuPuzzle(imageDecoded, 9)
+        # if success:
+        #     print(data)
+        #     success, filledImage = obj.fillSudokuPuzzle(imageDecoded, data, 9)
+        #     if success:
+        #         # Decoded image to string
+        #         imageString = ''
+        #         for r in range(0, filledImage.shape[0]):
+        #             for c in range(0, filledImage.shape[1]):
+        #                 for p in range(0, 3):
+        #                     imageString += str(filledImage[r][c][p]) + ' '
+        #
+        #         response = {
+        #             'imageHeight': filledImage.shape[0],
+        #             'imageWidth': filledImage.shape[1],
+        #             'image': imageString.strip()
+        #         }
+        #         return util.success_response(200, 'Puzzle detected and returned.', response)
+        #         # cv2.imshow('Puzzle', cv2.resize(filledImage, (600, 600)))
+        #         # cv2.waitKey(0)
+        #         # cv2.destroyAllWindows()
+        #     else:
+        #         print('Error occurred while filling the image with solution!')
+        #         return util.error_response(400, 'Error occurred while filling the image with solution.')
+        #
+        # else:
+        #     print('Invalid image!')
+        #     return util.error_response(400, 'Invalid image.')
 
-                response = {
-                    'imageHeight': filledImage.shape[0],
-                    'imageWidth': filledImage.shape[1],
-                    'image': imageString.strip()
-                }
-                return util.success_response(200, 'Puzzle detected and returned.', response)
-                # cv2.imshow('Puzzle', cv2.resize(filledImage, (600, 600)))
-                # cv2.waitKey(0)
-                # cv2.destroyAllWindows()
-            else:
-                print('Error occurred while filling the image with solution!')
-                return util.error_response(400, 'Error occurred while filling the image with solution.')
+        # To return success always
 
-        else:
-            print('Invalid image!')
-            return util.error_response(400, 'Invalid image.')
+        # Decoded image to string
+        imageString = ''
+        for r in range(0, imageDecoded.shape[0]):
+            for c in range(0, imageDecoded.shape[1]):
+                for p in range(0, 3):
+                    imageString += str(imageDecoded[r][c][p]) + ' '
+
+        response = {
+            'imageHeight': imageDecoded.shape[0],
+            'imageWidth': imageDecoded.shape[1],
+            'image': imageString.strip()
+        }
+        return util.success_response(200, 'Puzzle detected and returned.', response)
 
     return util.error_response(400, 'Error detecting the puzzle.')

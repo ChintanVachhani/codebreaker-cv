@@ -3,6 +3,7 @@ from flask import render_template, request
 from codebreaker_cv import *
 import cv2
 import numpy as np
+import base64
 
 
 @app.route('/')
@@ -22,8 +23,12 @@ def test():
 def solveSudoku():
     data = request.get_json() or {}
     if len(data) > 0:
-        buffer = data['image'].strip().split(' ')
-        buffer = [int(p) for p in buffer]
+        encodedPixels = data['image']
+        # print(encodedPixels)
+        buffer = np.fromstring(base64.b64decode(encodedPixels), np.uint8)
+
+        # buffer = data['image'].strip().split(' ')
+        # buffer = [int(p) for p in buffer]
 
         # print(data['stride'] / data['bufferWidth'])
 
@@ -91,19 +96,49 @@ def solveSudoku():
         #     print('Invalid image!')
         #     return util.error_response(400, 'Invalid image.')
 
+        # newImage = []
+        # for r in range(0, imageDecoded.shape[0]):
+        #     row = []
+        #     for c in range(0, imageDecoded.shape[1]):
+        #         row.append([imageDecoded[r][c][0], imageDecoded[r][c][1], imageDecoded[r][c][2]])
+        #     newImage.append(row)
+        #         # for p in range(0, 3):
+        #         #     imageString += str(imageDecoded[r][c][p]) + ' '
+        # print(newImage)
+        # newImage = np.asarray(newImage, dtype=np.uint8)
+        # imm = cv2.imread('test3.png')
+        # print(imm[0][0])
+        # print(imm[100][150])
+        # cv2.imshow('Image', newImage)
+        # cv2.waitKey(0)
+        # cv2.destroyAllWindows()
+
         # To return success always
 
         # Decoded image to string
-        imageString = ''
-        for r in range(0, imageDecoded.shape[0]):
-            for c in range(0, imageDecoded.shape[1]):
-                for p in range(0, 3):
-                    imageString += str(imageDecoded[r][c][p]) + ' '
+        # imageString = ''
+        # # newImage = []
+        # for r in range(0, imageDecoded.shape[0]):
+        #     # row = []
+        #     for c in range(0, imageDecoded.shape[1]):
+        #         # row.append([imageDecoded[r][c][0], imageDecoded[r][c][1], imageDecoded[r][c][2]])
+        #         # newImage.append(row)
+        #         for p in range(0, 3):
+        #             imageString += str(imageDecoded[r][c][p]) + ' '
+        # print(newImage)
+        # newImage = np.asarray(newImage, dtype=np.uint8)
+        # cv2.imwrite('test.png', imageDecoded)
+        # cv2.imshow('Image', newImage)
+        # cv2.waitKey(0)
+        # cv2.destroyAllWindows()
+
+        encodedImageString = base64.b64encode(imageEncoded).decode('utf-8')
+        # print(len(encodedImageString))
 
         response = {
             'imageHeight': imageDecoded.shape[0],
             'imageWidth': imageDecoded.shape[1],
-            'image': imageString.strip()
+            'image': encodedImageString
         }
         return util.success_response(200, 'Puzzle detected and returned.', response)
 

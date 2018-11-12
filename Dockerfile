@@ -12,7 +12,7 @@ RUN venv/bin/pip install gunicorn
 
 COPY app app
 COPY bin bin
-COPY codebreaker_cv.py boot.sh ./
+COPY application.py codebreaker_cv.py boot.sh ./
 RUN chmod +x boot.sh
 
 RUN chown -R codebreaker-cv:codebreaker-cv ./

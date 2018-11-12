@@ -1,5 +1,4 @@
-from app import application as app
-import util
+from app import application as app, util
 from flask import render_template, request
 from codebreaker_cv import *
 import cv2
@@ -12,12 +11,10 @@ def index():
     return render_template('index.html', title='Code Breaker', page='Computer Vision API')
 
 
-@app.route('/test', methods=['GET', 'POST'])
+@app.route('/test', methods=['GET'])
 def test():
-    data = request.get_json()
-    # print(data)
     response = {
-        'solution': data['puzzle']
+        'key': 'value'
     }
     return util.success_response(200, 'This is a test response.', response)
 

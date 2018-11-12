@@ -18,5 +18,5 @@ RUN chmod +x boot.sh
 RUN chown -R codebreaker-cv:codebreaker-cv ./
 USER codebreaker-cv
 
-EXPOSE 5000
+EXPOSE 8080
 ENTRYPOINT ["./boot.sh"]

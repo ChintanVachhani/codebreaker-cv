@@ -4,6 +4,7 @@ from codebreaker_cv import *
 import cv2
 import numpy as np
 import base64
+import requests
 
 
 @app.route('/')
@@ -60,7 +61,6 @@ def solveSudoku():
         _, imageEncoded = cv2.imencode(extension, imageBuffer)
         imageDecoded = cv2.imdecode(imageEncoded, cv2.IMREAD_COLOR)
         # print(imageDecoded)
-        #
         # cv2.imshow('Image', imageDecoded)
         # cv2.waitKey(0)
         # cv2.destroyAllWindows()
@@ -70,8 +70,22 @@ def solveSudoku():
         success, data = obj.detectSudokuPuzzle(imageDecoded, 9)
         if success:
             print(data)
-            success, filledImage = obj.fillSudokuPuzzle(imageDecoded, data, 9)
+            # call codebreaker-mi for solution
+            payload = {
+                'puzzle': data
+            }
+            miURL = os.environ.get('MI_URL', 'http://localhost:8080')
+            response = requests.post(miURL + '/solve', json=payload)
+            if response.status_code == requests.codes.ok:
+                solution = response.json()['data']['solution']
+                print(solution)
+            else:
+                return util.error_response(400, 'Error occurred while solving the puzzle.')
+            success, filledImage = obj.fillSudokuPuzzle(imageDecoded, solution, 9)
             if success:
+                # cv2.imshow('Image', filledImage)
+                # cv2.waitKey(0)
+                # cv2.destroyAllWindows()
                 encodedImageString = base64.b64encode(filledImage).decode('utf-8')
                 # print(len(encodedImageString))
 

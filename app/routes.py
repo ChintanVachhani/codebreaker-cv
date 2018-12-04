@@ -83,10 +83,14 @@ def solveSudoku():
                 return util.error_response(400, 'Error occurred while solving the puzzle.')
             success, filledImage = obj.fillSudokuPuzzle(imageDecoded, solution, 9)
             if success:
+                _, imageEncoded = cv2.imencode(extension, filledImage)
+                filledImage = cv2.imdecode(imageEncoded, cv2.IMREAD_COLOR)
+
                 # cv2.imshow('Image', filledImage)
                 # cv2.waitKey(0)
                 # cv2.destroyAllWindows()
-                encodedImageString = base64.b64encode(filledImage).decode('utf-8')
+
+                encodedImageString = base64.b64encode(imageEncoded).decode('utf-8')
                 # print(len(encodedImageString))
 
                 response = {
@@ -127,7 +131,7 @@ def solveSudoku():
 
         # Decoded image to string
         # imageString = ''
-        # # newImage = []
+        # newImage = []
         # for r in range(0, imageDecoded.shape[0]):
         #     # row = []
         #     for c in range(0, imageDecoded.shape[1]):

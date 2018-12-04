@@ -600,11 +600,12 @@ class PuzzleDetection:
 
         for contour in contours:
             squareArea = cv2.contourArea(contour)
+            # cv2.drawContours(image, [contour], 0, (0, 0, 255), 1)
             if squareArea > minSquareArea:
                 perimeter = cv2.arcLength(contour, True)
                 approxOutline = cv2.approxPolyDP(contour, 0.02 * perimeter, True)
                 if squareArea > maxSquareArea and len(approxOutline) == 4:
-                    # cv2.drawContours(image, [contour], 0, (0, 0, 255), 2)
+                    # cv2.drawContours(image, [contour], 0, (0, 255, 0), 2)
                     biggestSquare = approxOutline
                     maxSquareArea = squareArea
 
@@ -800,8 +801,8 @@ class PuzzleDetection:
                     foundDigit, cx, cy, cw, ch = self.__findSudokuDigit(cell)
                     if not foundDigit:
                         textPosition = (
-                            (x + int((cellWidth / 2))) - (fontScale * 10),
-                            (y + int((cellHeight / 2))) + (fontScale * 10))
+                            (x + int((cellWidth / 2))) - (fontScale * 12),
+                            (y + int((cellHeight / 2))) + (fontScale * 12))
                         cv2.putText(puzzleSquare, str(data[i][j]), textPosition, font, fontScale, fontColor,
                                     lineThickness,
                                     lineType)

@@ -73,67 +73,67 @@ def solveSudoku():
         #     imageDecoded = cv2.warpAffine(imageDecoded, M, (imageDecoded.shape[0], imageDecoded.shape[1]))
 
         # find and fill Sudoku
-        # obj = PuzzleDetection()
-        # success, data, puzzleSquare = obj.detectSudokuPuzzle(imageDecoded, 9)
-        # if success:
-        #     print(data)
-        #     # call codebreaker-mi for solution
-        #     payload = {
-        #         'puzzle': data
-        #     }
-        #     miURL = os.environ.get('MI_URL', 'http://localhost:8080')
-        #     response = requests.post(miURL + '/solve', json=payload)
-        #     if response.status_code == requests.codes.ok:
-        #         solution = response.json()['data']['solution']
-        #         print(solution)
-        #     else:
-        #         return util.error_response(400, 'Error occurred while solving the puzzle.')
-        #     success, filledImage = obj.fillSudokuPuzzle(puzzleSquare, solution, 9)
-        #     if success:
-        #         _, imageEncoded = cv2.imencode(extension, filledImage)
-        #         filledImage = cv2.imdecode(imageEncoded, cv2.IMREAD_COLOR)
-        #
-        #         # cv2.imshow('Image', filledImage)
-        #         # cv2.waitKey(0)
-        #         # cv2.destroyAllWindows()
-        #
-        #         encodedImageString = base64.b64encode(imageEncoded).decode('utf-8')
-        #         # print(len(encodedImageString))
-        #
-        #         response = {
-        #             'imageHeight': filledImage.shape[0],
-        #             'imageWidth': filledImage.shape[1],
-        #             'image': encodedImageString
-        #         }
-        #         return util.success_response(200, 'Puzzle detected and returned.', response)
-        #         # cv2.imshow('Puzzle', cv2.resize(filledImage, (600, 600)))
-        #         # cv2.waitKey(0)
-        #         # cv2.destroyAllWindows()
-        #     else:
-        #         print('Error occurred while filling the image with solution!')
-        #         return util.error_response(400, 'Error occurred while filling the image with solution.')
-        #
-        #     # Debugging purpose
-        #     # _, imageEncoded = cv2.imencode(extension, puzzleSquare)
-        #     # puzzleSquare = cv2.imdecode(imageEncoded, cv2.IMREAD_COLOR)
-        #     #
-        #     # # cv2.imshow('Image', filledImage)
-        #     # # cv2.waitKey(0)
-        #     # # cv2.destroyAllWindows()
-        #     #
-        #     # encodedImageString = base64.b64encode(imageEncoded).decode('utf-8')
-        #     # # print(len(encodedImageString))
-        #     #
-        #     # response = {
-        #     #     'imageHeight': puzzleSquare.shape[0],
-        #     #     'imageWidth': puzzleSquare.shape[1],
-        #     #     'image': encodedImageString
-        #     # }
-        #     # return util.success_response(200, 'Puzzle detected and returned.', response)
-        #
-        # else:
-        #     print('Invalid image!')
-        #     return util.error_response(400, 'Invalid image.')
+        obj = PuzzleDetection()
+        success, data, puzzleSquare = obj.detectSudokuPuzzle(imageDecoded, 9)
+        if success:
+            print(data)
+            # call codebreaker-mi for solution
+            payload = {
+                'puzzle': data
+            }
+            miURL = os.environ.get('MI_URL', 'http://localhost:8080')
+            response = requests.post(miURL + '/solve', json=payload)
+            if response.status_code == requests.codes.ok:
+                solution = response.json()['data']['solution']
+                print(solution)
+            else:
+                return util.error_response(400, 'Error occurred while solving the puzzle.')
+            success, filledImage = obj.fillSudokuPuzzle(puzzleSquare, solution, 9)
+            if success:
+                _, imageEncoded = cv2.imencode(extension, filledImage)
+                filledImage = cv2.imdecode(imageEncoded, cv2.IMREAD_COLOR)
+
+                # cv2.imshow('Image', filledImage)
+                # cv2.waitKey(0)
+                # cv2.destroyAllWindows()
+
+                encodedImageString = base64.b64encode(imageEncoded).decode('utf-8')
+                # print(len(encodedImageString))
+
+                response = {
+                    'imageHeight': filledImage.shape[0],
+                    'imageWidth': filledImage.shape[1],
+                    'image': encodedImageString
+                }
+                return util.success_response(200, 'Puzzle detected and returned.', response)
+                # cv2.imshow('Puzzle', cv2.resize(filledImage, (600, 600)))
+                # cv2.waitKey(0)
+                # cv2.destroyAllWindows()
+            else:
+                print('Error occurred while filling the image with solution!')
+                return util.error_response(400, 'Error occurred while filling the image with solution.')
+
+            # Debugging purpose
+            # _, imageEncoded = cv2.imencode(extension, puzzleSquare)
+            # puzzleSquare = cv2.imdecode(imageEncoded, cv2.IMREAD_COLOR)
+            #
+            # # cv2.imshow('Image', filledImage)
+            # # cv2.waitKey(0)
+            # # cv2.destroyAllWindows()
+            #
+            # encodedImageString = base64.b64encode(imageEncoded).decode('utf-8')
+            # # print(len(encodedImageString))
+            #
+            # response = {
+            #     'imageHeight': puzzleSquare.shape[0],
+            #     'imageWidth': puzzleSquare.shape[1],
+            #     'image': encodedImageString
+            # }
+            # return util.success_response(200, 'Puzzle detected and returned.', response)
+
+        else:
+            print('Invalid image!')
+            return util.error_response(400, 'Invalid image.')
 
         # newImage = []
         # for r in range(0, imageDecoded.shape[0]):
@@ -171,14 +171,14 @@ def solveSudoku():
         # cv2.waitKey(0)
         # cv2.destroyAllWindows()
 
-        encodedImageString = base64.b64encode(imageEncoded).decode('utf-8')
-        # print(len(encodedImageString))
-
-        response = {
-            'imageHeight': imageDecoded.shape[0],
-            'imageWidth': imageDecoded.shape[1],
-            'image': encodedImageString
-        }
-        return util.success_response(200, 'Puzzle detected and returned.', response)
+        # encodedImageString = base64.b64encode(imageEncoded).decode('utf-8')
+        # # print(len(encodedImageString))
+        #
+        # response = {
+        #     'imageHeight': imageDecoded.shape[0],
+        #     'imageWidth': imageDecoded.shape[1],
+        #     'image': encodedImageString
+        # }
+        # return util.success_response(200, 'Puzzle detected and returned.', response)
 
     return util.error_response(400, 'Error detecting the puzzle.')

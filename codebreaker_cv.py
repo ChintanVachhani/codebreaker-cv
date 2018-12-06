@@ -801,7 +801,7 @@ class PuzzleDetection:
         try:
             # load template
             template = cv2.imread(self.sudokuTemplateImage)
-            template = cv2.bitwise_not(template)
+            # template = cv2.bitwise_not(template)
             template = cv2.resize(template, (image.shape[1], image.shape[0]))
 
             # text style

@@ -382,6 +382,9 @@ class CharacterRecognitionWithKNN:
 
 class PuzzleDetection:
 
+    def __init__(self):
+        self.sudokuTemplateImage = "generated/template/sudoku.jpg"
+
     @staticmethod
     def __findGrid(image):
         """
@@ -796,12 +799,17 @@ class PuzzleDetection:
         :return: the puzzle image with filled data
         """
         try:
+            # load template
+            template = cv2.imread(self.sudokuTemplateImage)
+            template = cv2.bitwise_not(template)
+            template = cv2.resize(template, (image.shape[1], image.shape[0]))
+
             # text style
             font = cv2.FONT_HERSHEY_SIMPLEX
             bottomLeftCornerOfText = (10, 500)
             fontScale = 1
-            fontColorOne = (0, 0, 125)
-            fontColorTwo = (0, 255, 0)
+            fontColorOne = (0, 0, 255)
+            fontColorTwo = (255, 255, 255)
             lineThickness = 2
             lineType = 2
 
@@ -833,22 +841,22 @@ class PuzzleDetection:
                         textPosition = (
                             (x + int((cellWidth / 2))) - (fontScale * 12),
                             (y + int((cellHeight / 2))) + (fontScale * 12))
-                        cv2.putText(puzzleSquare, str(data[i][j]), textPosition, font, fontScale, fontColorOne,
+                        cv2.putText(template, str(data[i][j]), textPosition, font, fontScale, fontColorOne,
                                     lineThickness,
                                     lineType)
                         # print(data[i][j])
                         # cv2.imshow('Here', cell)
                         # cv2.waitKey(0)
                         # cv2.destroyAllWindows()
-                    # else:
-                    #     textPosition = (
-                    #         (x + int((cellWidth / 2))) - (fontScale * 12),
-                    #         (y + int((cellHeight / 2))) + (fontScale * 12))
-                    #     cv2.putText(puzzleSquare, str(data[i][j]), textPosition, font, fontScale, fontColorTwo,
-                    #                 lineThickness,
-                    #                 lineType)
+                    else:
+                        textPosition = (
+                            (x + int((cellWidth / 2))) - (fontScale * 12),
+                            (y + int((cellHeight / 2))) + (fontScale * 12))
+                        cv2.putText(template, str(data[i][j]), textPosition, font, fontScale, fontColorTwo,
+                                    lineThickness,
+                                    lineType)
 
-            return True, puzzleSquare
+            return True, template
         except:
             return False, image
 

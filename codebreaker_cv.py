@@ -597,7 +597,7 @@ class PuzzleDetection:
 
         biggestSquare = None
         maxSquareArea = 0
-        minSquareArea = puzzleSquare.size / 4
+        minSquareArea = puzzleSquare.size / 3
 
         for contour in contours:
             squareArea = cv2.contourArea(contour)

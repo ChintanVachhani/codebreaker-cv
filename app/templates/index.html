@@ -32,13 +32,29 @@
     <h4>API Calls</h4><br>
 
     <div class="card">
-        <h5 class="card-header alert-success">add(x, y)</h5>
+        <h5 class="card-header alert-success">detectSudokuPuzzle(image)</h5>
         <div class="card-body">
-            <p class="card-title"><span class="badge badge-success">GET</span>&nbsp; /calculate?x=9&operator=+&y=6</p>
+            <p class="card-title"><span class="badge badge-success">POST</span>&nbsp; /solve/sudoku</p>
+            <p class="card-text"><span class="badge badge-secondary">REQUEST</span>
+                {
+                "format": "GRAYSCALE",
+                "width": 640,
+                "height": 480,
+                "stride": 640,
+                "bufferWidth": 640,
+                "bufferHeight": 480,
+                "image":"U1FRUUxGQkJCQUA8PEFBODc......."
+                }
+            </p>
             <p class="card-text"><span class="badge badge-dark">RESPONSE</span>
                 {
-                "message": "Addition OK.",
-                "result": 15
+                "data":
+                {
+                "solution": "[[3, 6, 9, 1, 2, 4, 7, 5, 8], [1, 4, 8, 3, 7, 5, 6, 2, 9], [2, 7, 5, 6, 8, 9, 4, 3, 1], [8,
+                5, 9, 4, 3, 7, 2, 1, 6], [4, 1, 6, 8, 5, 2, 3, 9, 7], [7, 2, 3, 9, 6, 1, 5, 8, 4], [5, 9, 1, 7, 4, 3, 8,
+                6, 2], [3, 8, 7, 2, 1, 6, 9, 4, 5], [6, 4, 2, 5, 9, 8, 1, 7, 3]]"
+                },
+                "message": "Puzzle solved and solution returned."
                 }
             </p>
         </div>
@@ -48,7 +64,7 @@
     <div class="card">
         <h5 class="card-header alert-danger">not found</h5>
         <div class="card-body">
-            <p class="card-title"><span class="badge badge-success">GET</span>&nbsp; /cal?x=9&operator=+&y=6</p>
+            <p class="card-title"><span class="badge badge-success">POST</span>&nbsp; /solve/sudoku</p>
             <p class="card-text"><span class="badge badge-dark">RESPONSE</span>
                 {
                 "message": "Error.",

@@ -808,8 +808,8 @@ class PuzzleDetection:
             font = cv2.FONT_HERSHEY_SIMPLEX
             bottomLeftCornerOfText = (10, 500)
             fontScale = 1
-            fontColorOne = (0, 0, 255)
-            fontColorTwo = (255, 255, 255)
+            fontColorOne = (0, 0, 200)
+            fontColorTwo = (0, 0, 0)
             lineThickness = 2
             lineType = 2
 

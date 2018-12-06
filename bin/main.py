@@ -5,7 +5,7 @@ import requests
 def main():
     image = cv2.imread(sys.argv[1], 1)
     obj = PuzzleDetection()
-    success, data = obj.detectSudokuPuzzle(image, int(sys.argv[2]))
+    success, data, puzzleSquare = obj.detectSudokuPuzzle(image, int(sys.argv[2]))
     if success:
         print(data)
         # call codebreaker-mi for solution
@@ -19,7 +19,7 @@ def main():
             print(solution)
         else:
             solution = [[]]
-        success, filledImage = obj.fillSudokuPuzzle(image, solution, int(sys.argv[2]))
+        success, filledImage = obj.fillSudokuPuzzle(puzzleSquare, solution, int(sys.argv[2]))
         if success:
             cv2.imshow('Puzzle', cv2.resize(filledImage, (600, 600)))
             cv2.waitKey(0)

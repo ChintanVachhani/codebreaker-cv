@@ -186,3 +186,4 @@ generated/
 !.elasticbeanstalk/*.cfg.yml
 !.elasticbeanstalk/*.global.yml
 .ebignore
+.ssh/*

@@ -6,6 +6,7 @@ import numpy as np
 import operator
 import boto3 as aws
 import math
+from matplotlib import pyplot as plt
 
 
 class AWS:
@@ -478,7 +479,7 @@ class PuzzleDetection:
         """
         :param image: input image (cropped bounding box of a puzzle) containing grid in opencv format
         :param area: area of the input image (cropped bounding box of a puzzle)
-        :param puzzleSize: size of the puzzle grid (as number of squares)
+        :param puzzleSize: size of the puzzle grid (as number of squares in one row)
         :return: a list of grid points
         """
         imageGray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
@@ -596,7 +597,7 @@ class PuzzleDetection:
 
         biggestSquare = None
         maxSquareArea = 0
-        minSquareArea = puzzleSquare.size / 4
+        minSquareArea = puzzleSquare.size / 8
 
         for contour in contours:
             squareArea = cv2.contourArea(contour)
@@ -655,9 +656,13 @@ class PuzzleDetection:
         _, contours, hierarchy = cv2.findContours(imageGrayBlurredThresholdInverted, cv2.RETR_TREE,
                                                   cv2.CHAIN_APPROX_SIMPLE)
 
+        minWidth = image.shape[1] * .20
+        minHeight = image.shape[0] * .50
+        maxHeight = image.shape[0] * .75
+
         for contour in contours:
             x, y, w, h = cv2.boundingRect(contour)
-            if w >= 15 and (50 <= h <= 70):
+            if w >= minWidth and (minHeight <= h <= maxHeight):
                 # cv2.rectangle(image, (x, y), (x + w, y + h), (0, 255, 0), 2)
                 # print(w, h)
                 # cv2.imshow('Img', image)
@@ -670,13 +675,26 @@ class PuzzleDetection:
     def detectSudokuPuzzle(self, image, puzzleSize):
         """
         :param image: input image as buffer
-        :param puzzleSize: size of the puzzle grid (as number of squares)
-        :return: a 2D matrix of the puzzle grid
+        :param puzzleSize: size of the puzzle grid (as number of squares in one row)
+        :return: True if success (False otherwise), a 2D matrix of the puzzle grid, extracted puzzle sqaure
         """
         try:
+            # rotate image
+            # M = cv2.getRotationMatrix2D((image.shape[1] / 2, image.shape[0] / 2), 90, 1.0)
+            # image = cv2.warpAffine(image, M, (image.shape[0], image.shape[1]))
+
             # find puzzle grid
             x, y, w, h, a = self.__findSudokuGrid(image)
             puzzleSquare = image[y: y + h, x: x + w]
+
+            # text style
+            font = cv2.FONT_HERSHEY_SIMPLEX
+            bottomLeftCornerOfText = (10, 500)
+            fontScale = 1
+            fontColorOne = (0, 0, 125)
+            fontColorTwo = (0, 255, 0)
+            lineThickness = 2
+            lineType = 2
 
             # cv2.imshow('Here', cv2.resize(puzzleSquare, (600, 600)))
             # cv2.waitKey(0)
@@ -686,8 +704,8 @@ class PuzzleDetection:
             knnOCR = CharacterRecognitionWithKNN(minimumContourArea=55)
             data = [[0] * puzzleSize for _ in range(puzzleSize)]
 
-            puzzleWidth = puzzleSquare.shape[0]
-            puzzleHeight = puzzleSquare.shape[1]
+            puzzleWidth = puzzleSquare.shape[1]
+            puzzleHeight = puzzleSquare.shape[0]
             cellWidth = math.floor(puzzleWidth / puzzleSize)
             cellHeight = math.floor(puzzleHeight / puzzleSize)
             borderError = 0
@@ -698,6 +716,10 @@ class PuzzleDetection:
                     y = i * cellHeight
                     cell = puzzleSquare[y + borderError: y + cellHeight - borderError,
                            x + borderError: x + cellWidth - borderError]
+
+                    # cv2.imshow('Cell', cell)
+                    # cv2.waitKey(0)
+                    # cv2.destroyAllWindows()
                     # find id digit present in the cell
                     foundDigit, cx, cy, cw, ch = self.__findSudokuDigit(cell)
                     if foundDigit:
@@ -707,19 +729,24 @@ class PuzzleDetection:
                         if number is not None:
                             if not len(number) == 0:
                                 data[i][j] = int(number)
+                                # textPosition = (
+                                #     (x + int((cellWidth / 2))) - (fontScale * 12),
+                                #     (y + int((cellHeight / 2))) + (fontScale * 12))
+                                # cv2.putText(puzzleSquare, str(data[i][j]), textPosition, font, fontScale, fontColorTwo,
+                                #             lineThickness, lineType)
                         # print(data[i][j])
                         # cv2.imshow('Here', cell)
                         # cv2.waitKey(0)
                         # cv2.destroyAllWindows()
 
-            return True, data
+            return True, data, puzzleSquare
         except:
-            return False, [[]]
+            return False, [[]], image
 
     # def detectSudokuPuzzle(self, image, puzzleSize):
     #     """
     #     :param image: input image as buffer
-    #     :param puzzleSize: size of the puzzle grid (as number of squares)
+    #     :param puzzleSize: size of the puzzle grid (as number of squares in one row)
     #     :return: a 2D matrix of the puzzle grid
     #     """
     #     # find puzzle grid
@@ -734,8 +761,8 @@ class PuzzleDetection:
     #     knnOCR = CharacterRecognitionWithKNN(minimumContourArea=55)
     #     data = [[0] * puzzleSize for _ in range(puzzleSize)]
     #
-    #     puzzleWidth = puzzleSquare.shape[0]
-    #     puzzleHeight = puzzleSquare.shape[1]
+    #     puzzleWidth = puzzleSquare.shape[1]
+    #     puzzleHeight = puzzleSquare.shape[0]
     #     cellWidth = math.floor(puzzleWidth / puzzleSize)
     #     cellHeight = math.floor(puzzleHeight / puzzleSize)
     #     borderError = 0
@@ -763,6 +790,7 @@ class PuzzleDetection:
 
     def fillSudokuPuzzle(self, image, data, puzzleSize):
         """
+        :param puzzleSize: size of the puzzle grid (as number of squares in one row)
         :param image: input image (cropped bounding box of a cell) in opencv format
         :param data: data to fill into the image
         :return: the puzzle image with filled data
@@ -771,22 +799,24 @@ class PuzzleDetection:
             # text style
             font = cv2.FONT_HERSHEY_SIMPLEX
             bottomLeftCornerOfText = (10, 500)
-            fontScale = 2
-            fontColor = (0, 0, 125)
-            lineThickness = 6
+            fontScale = 1
+            fontColorOne = (0, 0, 125)
+            fontColorTwo = (0, 255, 0)
+            lineThickness = 2
             lineType = 2
 
             # find puzzle grid
-            x, y, w, h, a = self.__findSudokuGrid(image)
-            puzzleSquare = image[y: y + h, x: x + w]
+            # x, y, w, h, a = self.__findSudokuGrid(image)
+            # puzzleSquare = image[y: y + h, x: x + w]
+            puzzleSquare = image
 
             # cv2.imshow('Here', cv2.resize(puzzleSquare, (600, 600)))
             # cv2.waitKey(0)
             # cv2.destroyAllWindows()
 
             # extract each cell
-            puzzleWidth = puzzleSquare.shape[0]
-            puzzleHeight = puzzleSquare.shape[1]
+            puzzleWidth = puzzleSquare.shape[1]
+            puzzleHeight = puzzleSquare.shape[0]
             cellWidth = math.floor(puzzleWidth / puzzleSize)
             cellHeight = math.floor(puzzleHeight / puzzleSize)
             borderError = 0
@@ -797,19 +827,26 @@ class PuzzleDetection:
                     y = i * cellHeight
                     cell = puzzleSquare[y + borderError: y + cellHeight - borderError,
                            x + borderError: x + cellWidth - borderError]
-                    # find id digit present in the cell
+                    # find if digit present in the cell
                     foundDigit, cx, cy, cw, ch = self.__findSudokuDigit(cell)
                     if not foundDigit:
                         textPosition = (
                             (x + int((cellWidth / 2))) - (fontScale * 12),
                             (y + int((cellHeight / 2))) + (fontScale * 12))
-                        cv2.putText(puzzleSquare, str(data[i][j]), textPosition, font, fontScale, fontColor,
+                        cv2.putText(puzzleSquare, str(data[i][j]), textPosition, font, fontScale, fontColorOne,
                                     lineThickness,
                                     lineType)
                         # print(data[i][j])
                         # cv2.imshow('Here', cell)
                         # cv2.waitKey(0)
                         # cv2.destroyAllWindows()
+                    # else:
+                    #     textPosition = (
+                    #         (x + int((cellWidth / 2))) - (fontScale * 12),
+                    #         (y + int((cellHeight / 2))) + (fontScale * 12))
+                    #     cv2.putText(puzzleSquare, str(data[i][j]), textPosition, font, fontScale, fontColorTwo,
+                    #                 lineThickness,
+                    #                 lineType)
 
             return True, puzzleSquare
         except:
@@ -818,7 +855,7 @@ class PuzzleDetection:
     def detectCodeWordPuzzle(self, image, puzzleSize):
         """
         :param image: input image as buffer
-        :param puzzleSize: size of the puzzle grid (as number of squares)
+        :param puzzleSize: size of the puzzle grid (as number of squares in one row)
         :return: a 2D matrix of the puzzle grid, a dict that maps 1-26
         """
         try:
